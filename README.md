@@ -132,7 +132,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Link To Web Application
 
-To try out the tool please press [here](mahmoud-kebbi-system-reliability-analysis-coe553.streamlit.app)
+To try out the tool please press [here](https://mahmoud-kebbi-system-reliability-analysis-coe553.streamlit.app/)
 
 ---
 
