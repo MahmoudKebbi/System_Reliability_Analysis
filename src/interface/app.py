@@ -172,23 +172,64 @@ class ReliabilityAnalyzerApp:
             st.latex(sp.latex(expr))
             st.session_state.importanceMeasures = ImportanceMeasures(system, cut_sets)
 
-            # Create component reliabilities dictionary (at t=1.0 as default)
-            t = 1.0  # Default time point
-            component_reliabilities = {}
-            for comp_id, comp in system.components.items():
-                if hasattr(comp.failure_distribution, "reliability"):
-                    component_reliabilities[comp_id] = (
-                        comp.failure_distribution.reliability(t)
-                    )
-                else:
-                    # Default reliability if distribution doesn't have reliability method
-                    component_reliabilities[comp_id] = 0.9
+            # Add section for direct component failure probability inputs
+            st.subheader("Calculate System Reliability")
 
-            # Pass component_reliabilities to the method
-            reliability = st.session_state.importanceMeasures._evaluate_reliability(
-                component_reliabilities
-            )
-            st.metric("System Reliability", f"{reliability:.4f}")
+            # Display Component Failure Probabilities (q values) input section
+            st.write("Enter Component Failure Probabilities (q values):")
+
+            # Create input fields for each component
+            component_failure_probs = {}
+
+            # Create columns for better layout
+            cols = st.columns(3)
+            for i, (comp_id, comp) in enumerate(system.components.items()):
+                col_idx = i % 3
+                with cols[col_idx]:
+                    # Use a small default failure probability
+                    default_q = 0.01
+                    component_failure_probs[comp_id] = st.number_input(
+                        f"q_{comp_id} ({comp.name})",
+                        min_value=0.0,
+                        max_value=1.0,
+                        value=default_q,
+                        format="%.4f",
+                        step=0.001,
+                    )
+
+            # Calculate button
+            if st.button("Calculate System Reliability"):
+                # Create substitution dictionary for the symbolic expression
+                subs_dict = {
+                    sp.Symbol(f"q_{{{comp_id}}}"): q_value
+                    for comp_id, q_value in component_failure_probs.items()
+                }
+
+                # Evaluate unreliability expression with the provided values
+                system_unreliability = float(expr.subs(subs_dict))
+                system_reliability = 1 - system_unreliability
+
+                # Display results
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("System Reliability", f"{system_reliability:.6f}")
+                with col2:
+                    st.metric("System Unreliability", f"{system_unreliability:.6f}")
+
+                # Show expression evaluation details
+                with st.expander("Show Calculation Details"):
+                    st.write("Unreliability Expression:")
+                    st.latex(sp.latex(expr))
+
+                    st.write("Substituted Values:")
+                    for comp_id, q_value in component_failure_probs.items():
+                        st.write(f"q_{comp_id} = {q_value}")
+
+                    st.write(f"System Unreliability = {system_unreliability:.6f}")
+                    st.write(
+                        f"System Reliability = 1 - System Unreliability = {system_reliability:.6f}"
+                    )
+
         except Exception as e:
             st.error(f"Error generating unreliability expression: {str(e)}")
 
