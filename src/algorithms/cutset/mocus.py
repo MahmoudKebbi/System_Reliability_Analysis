@@ -22,6 +22,13 @@ class MOCUSAnalyzer:
         Returns:
             List of minimal cut sets, where each cut set is a set of component IDs
         """
+        # Check if there's a direct source-to-sink connection
+        if self.system.sink in self.system.graph[self.system.source]:
+            # Handle the special case with direct source-to-sink connection
+            # For a system with a direct connection, there are no minimal cut sets
+            # since the system works even if all components fail
+            return []
+
         # Get all paths from source to sink
         paths = self.system.get_all_paths()
 
