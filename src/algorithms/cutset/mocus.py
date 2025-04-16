@@ -35,8 +35,7 @@ class MOCUSAnalyzer:
             print(f"Error checking direct connections: {str(e)}")
 
         if direct_connection:
-            # For a system with a direct connection, return a special "impossible to cut" indicator
-            # An empty cut set means it's impossible for the system to fail through component failures
+            # For a system with a direct connection, return an empty list
             return []
 
         # Get all paths from source to sink
@@ -49,21 +48,32 @@ class MOCUSAnalyzer:
             # If only direct paths exist, return empty list indicating perfect reliability
             return []
 
-        # Filter out source and sink from paths
+        # Identify perfectly reliable components (0 failure rate)
+        perfectly_reliable_comps = set()
+        for comp_id, comp in self.system.components.items():
+            if hasattr(comp.failure_distribution, "failure_rate"):
+                if comp.failure_distribution.failure_rate == 0:
+                    perfectly_reliable_comps.add(comp_id)
+
+        # Filter out source, sink, and perfectly reliable components from paths
         component_paths = []
         for path in paths:
             component_path = [
                 node
                 for node in path
-                if node != self.system.source and node != self.system.sink
+                if (
+                    node != self.system.source
+                    and node != self.system.sink
+                    and node not in perfectly_reliable_comps
+                )
             ]
             if component_path:  # Only add non-empty paths
                 component_paths.append(component_path)
 
         if not component_paths:
+            # If all paths have only perfectly reliable components, system is perfectly reliable
             return []
 
-        # The rest of the MOCUS algorithm continues as before...
         # Start with the first path as initial cut sets
         cut_sets = [{comp} for comp in component_paths[0]]
 

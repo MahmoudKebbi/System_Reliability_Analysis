@@ -44,7 +44,11 @@ class InteractiveSystemBuilder:
         col1, col2 = st.columns(2)
         with col1:
             failure_rate = st.number_input(
-                "Failure Rate (λ)", min_value=0.0001, value=0.01, format="%.4f"
+                "Failure Rate (λ)",
+                min_value=0.0,
+                value=0.01,
+                format="%.6f",
+                # Changed min_value to 0.0 to allow perfect reliability
             )
 
         if st.button("Add Component"):
