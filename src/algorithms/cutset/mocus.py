@@ -22,15 +22,32 @@ class MOCUSAnalyzer:
         Returns:
             List of minimal cut sets, where each cut set is a set of component IDs
         """
+        # First check for direct connection between source and sink
+        direct_connection = False
+
         # Check if there's a direct source-to-sink connection
-        if self.system.sink in self.system.graph[self.system.source]:
-            # Handle the special case with direct source-to-sink connection
-            # For a system with a direct connection, there are no minimal cut sets
-            # since the system works even if all components fail
+        try:
+            if self.system.sink in self.system.graph.successors(self.system.source):
+                print("Direct source-to-sink connection detected!")
+                direct_connection = True
+        except Exception as e:
+            # Handle any potential exceptions with graph access
+            print(f"Error checking direct connections: {str(e)}")
+
+        if direct_connection:
+            # For a system with a direct connection, return a special "impossible to cut" indicator
+            # An empty cut set means it's impossible for the system to fail through component failures
             return []
 
         # Get all paths from source to sink
         paths = self.system.get_all_paths()
+
+        # Filter paths that are just direct source-to-sink connections
+        paths = [path for path in paths if len(path) > 2]
+
+        if not paths:
+            # If only direct paths exist, return empty list indicating perfect reliability
+            return []
 
         # Filter out source and sink from paths
         component_paths = []
@@ -46,6 +63,7 @@ class MOCUSAnalyzer:
         if not component_paths:
             return []
 
+        # The rest of the MOCUS algorithm continues as before...
         # Start with the first path as initial cut sets
         cut_sets = [{comp} for comp in component_paths[0]]
 
