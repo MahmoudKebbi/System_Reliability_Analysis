@@ -112,7 +112,7 @@ This tool implements several key reliability engineering concepts:
 
 - **Minimal Cut Sets**: Sets of components that, when failed, cause system failure
 - **Structure Function**: Mathematical representation of system behavior
-- **Reliability Function**: Probability that system works at time t
+- **Reliability Function**: Probability that system works
 - **Monte Carlo Method**: Statistical sampling for reliability estimation
 
 ## 📜 License
