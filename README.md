@@ -9,7 +9,6 @@
 ## ✨ Features
 
 - **🎭 Interactive System Builder**
-  - Drag-and-drop component creation
   - Predefined system templates (series, parallel, bridge networks)
   - Real-time system visualization
 
